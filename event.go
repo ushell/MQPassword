@@ -15,8 +15,9 @@ func (this *Event) AppClose() bool {
 	return model.Store()
 }
 
-func (this *Event) PasswordChange(password string) (result bool, msg string) {
-	return true, ""
+func (this *Event) PasswordChange(password, originPassword string) (result bool, msg string) {
+	model := new(Model)
+	return model.PasswordChange(password, originPassword)
 }
 
 func (this *Event) AppInit() {

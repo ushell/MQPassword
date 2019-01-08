@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -71,13 +72,13 @@ func (this *Model)EnvInit() {
 
 		cryptInstance := new(CryptService)
 
-		fmt.Println(string(jsonEncode(data)), data)
+		//fmt.Println(string(jsonEncode(data)), data)
 
 		database := cryptInstance.Encrypt(jsonEncode(data))
 
 		writeToFile(database, db_path)
 
-		fmt.Println("加密内容:", database)
+		//fmt.Println("加密内容:", database)
 
 		APP_FIRST_INIT = true
 	}
@@ -98,7 +99,7 @@ func (this *Model)PasswordCheck(password string) bool {
 
 	database := readFromFile(db_path)
 
-	fmt.Println("读取加密:", database)
+	//fmt.Println("读取加密:", database)
 
 	cryptInstance := new(CryptService)
 	databaseDecrypt := cryptInstance.Decrypt(database)
@@ -109,12 +110,17 @@ func (this *Model)PasswordCheck(password string) bool {
 
 		return false
 	}
-	log.Println("解码:", string(databaseDecrypt))
+	if strings.Contains(string(databaseDecrypt), "Version") == false {
+		MAIN_KEY = ""
+		return false
+	}
+
+	//log.Println("解码:", string(databaseDecrypt))
 
 	//解码
 	jsonDecode(databaseDecrypt, &DATABASE)
 
-	log.Println("数据:", DATABASE, DATABASE.Time)
+	//log.Println("数据:", DATABASE, DATABASE.Time)
 
 	return true
 }
@@ -145,9 +151,6 @@ func (this *Model)Save(data InputContent) bool {
 			DATABASE.Count++
 		}
 	}
-
-
-	log.Println("数据库:", DATABASE)
 
 	return true
 }
@@ -193,8 +196,10 @@ func (this *Model)Store() bool {
 }
 
 //密码更新
-func (this *Model)PasswordChange(password string) (r bool, msg string) {
-	if md5Encrypt(password) != MAIN_KEY {
+func (this *Model)PasswordChange(password, originPassword string) (r bool, msg string) {
+	log.Println(originPassword, MAIN_KEY)
+
+	if md5Encrypt(originPassword) != MAIN_KEY {
 		return false, "原密码错误"
 	}
 

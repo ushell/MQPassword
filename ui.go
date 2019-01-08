@@ -122,13 +122,13 @@ func makeDemo() ui.Control {
 //数据存储
 func makeInputWindow(content *InputContent, win *ui.Window) ui.Control {
 	vbox := ui.NewVerticalBox()
-	vbox.SetPadded(true)
+	vbox.SetPadded(false)
 
 	group := ui.NewGroup("输入区域")
 	group.SetMargined(true)
-	vbox.Append(group, false)
+	vbox.Append(group, true)
 
-	group.SetChild(ui.NewNonWrappingMultilineEntry())
+	//group.SetChild(ui.NewNonWrappingMultilineEntry())
 
 	input := ui.NewForm()
 	input.SetPadded(true)
@@ -171,6 +171,9 @@ func makeInputWindow(content *InputContent, win *ui.Window) ui.Control {
 		//存储数据
 		data := InputContent{Name:name.Text(),Account:account.Text(), Password:password.Text(), Domain:domain.Text(), Comment:comment.Text()}
 
+		if data.Name == "" || data.Account == "" || data.Password == ""{
+			ui.MsgBox(win, "操作提示", "数据不能为空")
+		}
 		if uiEvent.PasswordSave(data) == false {
 			ui.MsgBox(win, "操作提示", "操作失败")
 		} else {
@@ -180,7 +183,7 @@ func makeInputWindow(content *InputContent, win *ui.Window) ui.Control {
 		win.Destroy()
 	})
 
-	vbox.Append(button, false)
+	input.Append("", button, false)
 
 	return vbox
 }
@@ -273,11 +276,6 @@ func makePasswordWindow() ui.Control {
 			ui.MsgBox(mainwin, "操作提示", "密码为空")
 		}
 	})
-	confirmPassword.OnChanged(func(entry *ui.Entry) {
-		if password.Text() != entry.Text() {
-			ui.MsgBox(mainwin, "操作提示", "两次密码不一致")
-		}
-	})
 
 	//确认
 	submit := ui.NewButton("确认")
@@ -285,7 +283,10 @@ func makePasswordWindow() ui.Control {
 		if password.Text() == "" {
 			ui.MsgBox(mainwin, "操作提示", "密码为空")
 		}
-		result, msg := uiEvent.PasswordChange(password.Text())
+		if password.Text() != confirmPassword.Text() {
+			ui.MsgBox(mainwin, "操作提示", "两次密码不一致")
+		}
+		result, msg := uiEvent.PasswordChange(password.Text(), originPassword.Text())
 		if result == true {
 			ui.MsgBox(mainwin, "操作提示", "操作成功")
 		} else {
